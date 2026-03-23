@@ -1,0 +1,66 @@
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+
+const app = express();
+const PORT = 3000;
+const API_KEY = process.env.API_FOOTBALL_KEY;
+const API_BASE_URL = "https://v3.football.api-sports.io";
+
+app.use(cors());
+app.use(express.json());
+
+// Proxy endpoint for fixtures
+app.get("/fixtures", async (req, res) => {
+  try {
+    const { league, date, season = 2026 } = req.query;
+    const url = `${API_BASE_URL}/fixtures?league=${league}&season=${season}&date=${date}`;
+
+    const response = await fetch(url, {
+      headers: { "x-apisports-key": API_KEY }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch fixtures" });
+  }
+});
+
+// Proxy endpoint for favorites
+app.get("/favorites", async (req, res) => {
+  try {
+    const { teams, season = 2026, next = 5 } = req.query;
+    const url = `${API_BASE_URL}/fixtures?teams=${teams}&season=${season}&next=${next}`;
+
+    const response = await fetch(url, {
+      headers: { "x-apisports-key": API_KEY }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch favorites" });
+  }
+});
+
+// Proxy endpoint for odds
+app.get("/odds", async (req, res) => {
+  try {
+    const { fixture } = req.query;
+    const url = `${API_BASE_URL}/odds?fixture=${fixture}`;
+
+    const response = await fetch(url, {
+      headers: { "x-apisports-key": API_KEY }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch odds" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
